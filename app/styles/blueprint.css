@@ -1,7 +1,9 @@
 .blueprint-bg {
   background-color: #1e3a8a; /* Dark blue background */
-  background-image: 
-    linear-gradient(rgba(147, 197, 253, 0.1) 1px, transparent 1px),
+  background-image: linear-gradient(
+      rgba(147, 197, 253, 0.1) 1px,
+      transparent 1px
+    ),
     linear-gradient(90deg, rgba(147, 197, 253, 0.1) 1px, transparent 1px),
     linear-gradient(rgba(147, 197, 253, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(147, 197, 253, 0.05) 1px, transparent 1px);
@@ -9,7 +11,8 @@
   background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
 }
 
-.ruler-top, .ruler-left {
+.ruler-top,
+.ruler-left {
   position: fixed;
   background-color: #1e3a8a;
   z-index: 40;
@@ -106,4 +109,3 @@
   font-weight: 600;
   color: #93c5fd !important;
 }
-
