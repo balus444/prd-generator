@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
+import UserComfortLevel from "@/components/UserComfortLevel";
 
 interface Feature {
   featureName: string;
@@ -82,7 +83,7 @@ interface QueryState {
   targetAudience: string;
   problemStatement: string;
   proposedSolution: string;
-  granularity: "High-Level" | "Detailed";
+  comfortLevel: "Beginner" | "Intermediate" | "Expert";
   breakdown: Breakdown | null;
 }
 
@@ -93,7 +94,7 @@ export default function Home() {
     targetAudience: "",
     problemStatement: "",
     proposedSolution: "",
-    granularity: "High-Level",
+    comfortLevel: "Beginner" as const,
     breakdown: null,
   });
   const [queryHistory, setQueryHistory] = useState<QueryState[]>([]);
@@ -143,14 +144,19 @@ export default function Home() {
     setCurrentQuery(queryHistory[index]);
   };
 
-  const handlePromptSelect = async (prompt: string) => {
+  const handlePromptSelect = async (prompt: {
+    text: string;
+    vision: string;
+    targetAudience: string;
+    problemStatement: string;
+  }) => {
     const newQuery = {
-      productName: prompt,
-      productVision: "",
-      targetAudience: "",
-      problemStatement: "",
+      productName: prompt.text,
+      productVision: prompt.vision,
+      targetAudience: prompt.targetAudience,
+      problemStatement: prompt.problemStatement,
       proposedSolution: "",
-      granularity: "High-Level",
+      comfortLevel: "Beginner" as const,
       breakdown: null,
     };
 
@@ -299,55 +305,28 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="blueprint-text mb-8">
-                    Granularity Level
-                  </Label>
-                  <RadioGroup
-                    value={currentQuery.granularity}
-                    onValueChange={(value: "High-Level" | "Detailed") =>
+                  <Label className="blueprint-text mb-8">Comfort Level</Label>
+                  <UserComfortLevel
+                    value={currentQuery.comfortLevel}
+                    onChange={(value) =>
                       setCurrentQuery((prev) => ({
                         ...prev,
-                        granularity: value,
+                        comfortLevel: value,
                       }))
                     }
-                    className="grid grid-cols-2 gap-4"
                     disabled={isLoading}
-                  >
-                    <div className="relative blueprint-button">
-                      <Label
-                        htmlFor="high-level"
-                        className="flex flex-col space-y-2 rounded-lg bg-blue-950/50 p-4 cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2">
-                          <RadioGroupItem value="High-Level" id="high-level" />
-                          <span className="blueprint-text">High-Level PRD</span>
-                        </div>
-                        <span className="text-sm text-blue-300/70">
-                          Overview of core features and main requirements
-                        </span>
-                      </Label>
-                    </div>
-
-                    <div className="relative blueprint-button">
-                      <Label
-                        htmlFor="detailed"
-                        className="flex flex-col space-y-2 rounded-lg bg-blue-950/50 p-4 cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2">
-                          <RadioGroupItem value="Detailed" id="detailed" />
-                          <span className="blueprint-input">Detailed PRD</span>
-                        </div>
-                        <span className="text-sm text-blue-300/70">
-                          Comprehensive documentation with technical
-                          specifications
-                        </span>
-                      </Label>
-                    </div>
-                  </RadioGroup>
+                  />
                 </div>
                 <Button
                   type="submit"
-                  disabled={isLoading || !currentQuery.productName.trim()}
+                  disabled={
+                    isLoading ||
+                    !currentQuery.productName.trim() ||
+                    !currentQuery.productVision.trim() ||
+                    !currentQuery.targetAudience.trim() ||
+                    !currentQuery.problemStatement.trim() ||
+                    !currentQuery.comfortLevel
+                  }
                   className="blueprint-button-primary font-bold"
                 >
                   Generate PRD

@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       productVision,
       targetAudience,
       problemStatement,
-      granularity,
+      comfortLevel,
     } = await req.json();
 
     if (
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       !productVision ||
       !targetAudience ||
       !problemStatement ||
-      !granularity
+      !comfortLevel
     ) {
       return Response.json(
         { error: "Invalid input: Missing required fields" },
@@ -33,13 +33,40 @@ export async function POST(req: Request) {
 
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
+    const technicalDepthPrompt = {
+      Beginner: `
+        - Focus on essential, well-established technologies
+        - Provide clear, beginner-friendly technical explanations
+        - Emphasize maintainable and well-documented solutions
+        - Suggest popular, stable tech stack with extensive community support
+        - Include learning resources and getting started guides
+      `,
+      Intermediate: `
+        - Balance between modern and established technologies
+        - Include some advanced architectural patterns
+        - Suggest scalable solutions with moderate complexity
+        - Recommend industry-standard practices and tools
+        - Include performance optimization considerations
+      `,
+      Expert: `
+        - Incorporate cutting-edge technologies where appropriate
+        - Suggest advanced architectural patterns and design principles
+        - Include complex scalability and performance optimizations
+        - Consider microservices and distributed systems approaches
+        - Recommend advanced monitoring and DevOps practices
+      `,
+    }[comfortLevel];
+
     const prompt = `
       Provide a detailed Product Requirements Document (PRD) for the product: "${productName}".
 
       Product Vision: ${productVision}
       Target Audience: ${targetAudience}
       Problem Statement: ${problemStatement}
-      Granularity Level: ${granularity}
+      Technical Expertise Level: ${comfortLevel}
+
+      Technical Depth Considerations:
+      ${technicalDepthPrompt}
 
       Format your response as a valid JSON object with this structure:
       {
@@ -98,16 +125,17 @@ export async function POST(req: Request) {
 
       Rules:
       1. Generate a comprehensive proposed solution based on the problem statement and vision
-      2. For features and user stories:
-         - In High-Level mode: Provide core features with 1 user story each
-         - In Detailed mode: Provide comprehensive features with 2-3 user stories each
-      3. Provide modern, production-ready technology suggestions for 2024/2025
-      4. Include specific, measurable criteria in all NFRs
-      5. Ensure roadmap aligns with granularity level
+      2. Adjust technical complexity based on the user's comfort level (${comfortLevel})
+      3. For features and user stories:
+         - Beginner: Focus on essential features with clear, straightforward implementations
+         - Intermediate: Include moderately complex features with some advanced patterns
+         - Expert: Include advanced features with sophisticated technical solutions
+      4. Provide technology suggestions appropriate for the user's comfort level
+      5. Include specific, measurable criteria in all NFRs
       6. Success metrics should be specific and measurable
       7. Make all responses specific to the product domain
       8. Provide thorough acceptance criteria for each user story
-      9. Ensure tech stack suggestions are cutting-edge but production-stable
+      9. Tech stack suggestions should match the user's comfort level
       10. Response must be only the JSON object, no additional text
     `;
 
