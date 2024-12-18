@@ -34,12 +34,12 @@ interface Epic {
 }
 
 interface NonFunctionalRequirements {
-  performance?: string;
-  scalability?: string;
-  security?: string;
-  usability?: string;
-  reliability?: string;
-  maintainability?: string;
+  performance: string;
+  scalability: string;
+  security: string;
+  usability: string;
+  reliability: string;
+  maintainability: string;
 }
 
 interface Roadmaps {
@@ -48,6 +48,19 @@ interface Roadmaps {
   p2?: string;
 }
 
+interface TechStackSuggestion {
+  frontend: string[];
+  backend: string[];
+  database: string[];
+  devops: string[];
+  rationale: string;
+}
+
+interface SuccessMetrics {
+  businessMetrics: string[];
+  technicalMetrics: string[];
+  userMetrics: string[];
+}
 
 interface Breakdown {
   productName: string;
@@ -59,6 +72,8 @@ interface Breakdown {
   epics: Epic[];
   nonFunctionalRequirements: NonFunctionalRequirements;
   roadmaps: Roadmaps;
+  suggestedTechStack: TechStackSuggestion;
+  successMetrics: SuccessMetrics;
 }
 
 interface QueryState {
@@ -68,11 +83,6 @@ interface QueryState {
   problemStatement: string;
   proposedSolution: string;
   granularity: 'High-Level' | 'Detailed';
-  nfrs: NonFunctionalRequirements;
-  techStack: string;
-  apis: string;
-  dataModel: string;
-  kpis: string;
   breakdown: Breakdown | null;
 }
 
@@ -84,48 +94,11 @@ export default function Home() {
     problemStatement: '',
     proposedSolution: '',
     granularity: 'High-Level',
-    nfrs: {},
-    techStack: '',
-    apis: '',
-    dataModel: '',
-    kpis: '',
     breakdown: null
   })
   const [queryHistory, setQueryHistory] = useState<QueryState[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-
-    const nfrOptions = [
-      { id: 'performance', label: 'Performance' },
-      { id: 'scalability', label: 'Scalability' },
-      { id: 'security', label: 'Security' },
-      { id: 'usability', label: 'Usability' },
-      { id: 'reliability', label: 'Reliability' },
-      { id: 'maintainability', label: 'Maintainability' },
-    ];
-
-
-    const handleNFRChange = (id: string, checked: boolean) => {
-      setCurrentQuery((prev) => {
-        const newNfrs = { ...prev.nfrs };
-        if (checked) {
-          newNfrs[id] = ''; // Initialize with a placeholder, will be updated when user puts input in text field.
-        } else {
-          delete newNfrs[id];
-        }
-
-        return { ...prev, nfrs: newNfrs };
-      });
-    };
-
-
-    const handleNFRDescriptionChange = (id: string, value: string) => {
-      setCurrentQuery((prev) => ({
-        ...prev,
-        nfrs: { ...prev.nfrs, [id]: value },
-      }));
-    };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) {
@@ -176,11 +149,6 @@ export default function Home() {
            problemStatement: '',
            proposedSolution: '',
            granularity: 'High-Level',
-           nfrs: {},
-           techStack: '',
-           apis: '',
-           dataModel: '',
-           kpis: '',
            breakdown: null
       }
 
@@ -231,8 +199,8 @@ export default function Home() {
             <div className="space-y-4">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <Label htmlFor="productName">Product Name</Label>
+                    <div className="space-y-2">
+                        <Label htmlFor="productName" className="blueprint-text mb-8">Product Name</Label>
                         <Input
                           type="text"
                           id="productName"
@@ -240,37 +208,37 @@ export default function Home() {
                           onChange={(e) => setCurrentQuery(prev => ({ ...prev, productName: e.target.value }))}
                           placeholder="Name of the product"
                           disabled={isLoading}
-                        className="w-full blueprint-input border border-2"
+                          className="w-full blueprint-input border border-2"
                         />
                     </div>
-                    <div>
-                        <Label htmlFor="productVision">Product Vision</Label>
+                    <div className="space-y-2">
+                        <Label htmlFor="productVision" className="blueprint-text mb-8">Product Vision</Label>
                          <Input
                           type="text"
                           id="productVision"
                           value={currentQuery.productVision}
                           onChange={(e) => setCurrentQuery(prev => ({ ...prev, productVision: e.target.value }))}
                           placeholder="Vision for the product"
-                        disabled={isLoading}
+                          disabled={isLoading}
                           className="w-full blueprint-input border border-2"
                         />
                     </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                     <div>
-                      <Label htmlFor="targetAudience">Target Audience</Label>
+                     <div className="space-y-2">
+                      <Label htmlFor="targetAudience" className="blueprint-text mb-8">Target Audience</Label>
                       <Input
                         type="text"
                          id="targetAudience"
-                        value={currentQuery.targetAudience}
-                        onChange={(e) => setCurrentQuery(prev => ({ ...prev, targetAudience: e.target.value }))}
+                         value={currentQuery.targetAudience}
+                         onChange={(e) => setCurrentQuery(prev => ({ ...prev, targetAudience: e.target.value }))}
                          placeholder="Who is this product for?"
-                        disabled={isLoading}
+                         disabled={isLoading}
                         className="w-full blueprint-input border border-2"
                       />
                     </div>
-                      <div>
-                       <Label htmlFor="problemStatement">Problem Statement</Label>
+                      <div className="space-y-2">
+                       <Label htmlFor="problemStatement" className="blueprint-text mb-8">Problem Statement</Label>
                         <Input
                           type="text"
                           id="problemStatement"
@@ -282,118 +250,28 @@ export default function Home() {
                         />
                       </div>
                 </div>
-                  <div>
-                    <Label htmlFor="proposedSolution">Proposed Solution</Label>
-                   <Textarea
-                     id="proposedSolution"
-                     value={currentQuery.proposedSolution}
-                     onChange={(e) => setCurrentQuery(prev => ({ ...prev, proposedSolution: e.target.value }))}
-                     placeholder="How does this product address the problem"
-                    disabled={isLoading}
-                     className="w-full blueprint-input border border-2"
-                   />
-                </div>
-                <div>
-                <Label> Granularity Level </Label>
+                <div className="space-y-2">
+                <Label className="blueprint-text mb-8"> Granularity Level </Label>
                   <div className="flex items-center space-x-4">
                       <Button
                         type="button"
                         variant={currentQuery.granularity === 'High-Level' ? 'default' : 'outline'}
-                         onClick={() => setCurrentQuery(prev => ({ ...prev, granularity: 'High-Level' }))}
-                          disabled={isLoading}
+                        onClick={() => setCurrentQuery(prev => ({ ...prev, granularity: 'High-Level' }))}
+                        disabled={isLoading}
                       >
                       High-Level
                       </Button>
                       <Button
-                          type="button"
-                          variant={currentQuery.granularity === 'Detailed' ? 'default' : 'outline'}
-                         onClick={() => setCurrentQuery(prev => ({ ...prev, granularity: 'Detailed' }))}
-                           disabled={isLoading}
+                        type="button"
+                        variant={currentQuery.granularity === 'Detailed' ? 'default' : 'outline'}
+                        onClick={() => setCurrentQuery(prev => ({ ...prev, granularity: 'Detailed' }))}
+                        disabled={isLoading}
                       >
-                       Detailed
+                        Detailed
                       </Button>
                  </div>
                 </div>
-
-                  <div>
-                      <Label>Non-Functional Requirements</Label>
-                      <div className="space-y-2 mt-2">
-                       {nfrOptions.map((option) => (
-                           <div key={option.id} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={option.id}
-                                checked={!!currentQuery.nfrs[option.id]}
-                                onCheckedChange={(checked) => handleNFRChange(option.id, !!checked)}
-                              />
-                              <Label htmlFor={option.id}>{option.label}</Label>
-                              {currentQuery.nfrs[option.id] !== undefined && (
-                                <Input
-                                  type="text"
-                                  placeholder={`Enter description for ${option.label}`}
-                                  value={currentQuery.nfrs[option.id]}
-                                  onChange={(e) => handleNFRDescriptionChange(option.id, e.target.value)}
-                                  disabled={isLoading}
-                                  className="blueprint-input border border-2"
-                                />
-                            )}
-                         </div>
-                        ))}
-                     </div>
-                  </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                     <Label htmlFor="techStack">Tech Stack</Label>
-                      <Input
-                        type="text"
-                        id="techStack"
-                       value={currentQuery.techStack}
-                        onChange={(e) => setCurrentQuery(prev => ({ ...prev, techStack: e.target.value }))}
-                       placeholder="e.g., React, Node.js, PostgreSQL"
-                         disabled={isLoading}
-                         className="w-full blueprint-input border border-2"
-                      />
-                  </div>
-                    <div>
-                      <Label htmlFor="apis">APIs</Label>
-                       <Input
-                         type="text"
-                         id="apis"
-                         value={currentQuery.apis}
-                        onChange={(e) => setCurrentQuery(prev => ({ ...prev, apis: e.target.value }))}
-                        placeholder="List any API requirements"
-                        disabled={isLoading}
-                          className="w-full blueprint-input border border-2"
-                      />
-                    </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="dataModel">Data Model</Label>
-                    <Input
-                      type="text"
-                      id="dataModel"
-                      value={currentQuery.dataModel}
-                      onChange={(e) => setCurrentQuery(prev => ({ ...prev, dataModel: e.target.value }))}
-                      placeholder="High-level data model description"
-                      disabled={isLoading}
-                      className="w-full blueprint-input border border-2"
-                    />
-                </div>
-
-                   <div>
-                    <Label htmlFor="kpis">Success Metrics</Label>
-                     <Input
-                       type="text"
-                       id="kpis"
-                       value={currentQuery.kpis}
-                       onChange={(e) => setCurrentQuery(prev => ({ ...prev, kpis: e.target.value }))}
-                       placeholder="Key performance indicators"
-                       disabled={isLoading}
-                       className="w-full blueprint-input border border-2"
-                     />
-                   </div>
-
+                
                 <Button
                   type="submit"
                   disabled={isLoading || !currentQuery.productName.trim()}
@@ -444,9 +322,9 @@ export default function Home() {
 
       <footer className="w-full py-4 mt-auto">
         <p className="text-center text-xs blueprint-text opacity-50">
-          floguo 2024 • {' '}
+          balasubbiah 2024 • {' '}
           <a
-            href="https://x.com/floguo"
+            href="https://x.com/@1balasubbiah"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:opacity-80 transition-opacity"
@@ -455,7 +333,7 @@ export default function Home() {
           </a>
           {' '} • {' '}
           <a
-            href="https://github.com/floguo"
+            href="https://github.com/balus444"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:opacity-80 transition-opacity"

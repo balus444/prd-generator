@@ -15,13 +15,7 @@ export async function POST(req: Request) {
       productVision,
       targetAudience,
       problemStatement,
-      proposedSolution,
       granularity,
-      nfrs = {},
-      techStack,
-      apis,
-      dataModel,
-      kpis,
     } = await req.json();
 
     if (
@@ -29,7 +23,6 @@ export async function POST(req: Request) {
       !productVision ||
       !targetAudience ||
       !problemStatement ||
-      !proposedSolution ||
       !granularity
     ) {
       return Response.json(
@@ -40,77 +33,83 @@ export async function POST(req: Request) {
 
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    const nfrsString = Object.entries(nfrs)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join(", ");
-
     const prompt = `
-          Provide a detailed Product Requirements Document (PRD) for the product: "${productName}".
+      Provide a detailed Product Requirements Document (PRD) for the product: "${productName}".
 
-          Product Vision: ${productVision}
-          Target Audience: ${targetAudience}
-          Problem Statement: ${problemStatement}
-          Proposed Solution: ${proposedSolution}
-          Granularity Level: ${granularity}
-          Non-Functional Requirements: ${nfrsString}
-          Tech Stack: ${techStack || "Not specified"}
-          APIs: ${apis || "Not specified"}
-          Data Model: ${dataModel || "Not specified"}
-          KPIs: ${kpis || "Not specified"}
+      Product Vision: ${productVision}
+      Target Audience: ${targetAudience}
+      Problem Statement: ${problemStatement}
+      Granularity Level: ${granularity}
 
-          Format your response as a valid JSON object with this structure:
-           {
-             "productName": "${productName}",
-              "productVision": "${productVision}",
-              "targetAudience": "${targetAudience}",
-              "problemStatement": "${problemStatement}",
-              "proposedSolution": "${proposedSolution}",
-              "features": [
-                 {
-                   "featureName": "Name of the Feature",
-                   "featureDescription": "Description of the feature",
-                    "priority": "P0/P1/P2/P3",
-                    "userStories": [
-                       {
-                         "userStory": "As a [user role], I want [goal/desire], so that [benefit]",
-                           "acceptanceCriteria": ["Criterion 1", "Criterion 2"]
-                         }
-                     ]
-                  }
-                ],
-             "epics": [
-                {
-                  "epicName": "Name of the Epic",
-                  "description": "Description of the epic",
-                  "userStories": ["list of user stories ids or user story names"],
-                  "acceptanceCriteria": ["high level acceptance criteria for the epic"]
-                }
-             ],
-              "nonFunctionalRequirements": {
-                 "performance": "Description of performance requirements",
-                 "scalability": "Description of scalability requirements",
-                 "security": "Description of security requirements",
-                 "usability": "Description of usability requirements",
-                 "reliability": "Description of reliability requirements",
-                 "maintainability": "Description of maintainability requirements"
-              },
-             "roadmaps": {
-                 "p0": "Roadmap overview for P0",
-                 "p1": "Roadmap overview for P1",
-                 "p2": "Roadmap overview for P2"
+      Format your response as a valid JSON object with this structure:
+      {
+        "productName": "${productName}",
+        "productVision": "${productVision}",
+        "targetAudience": "${targetAudience}",
+        "problemStatement": "${problemStatement}",
+        "proposedSolution": "AI-generated comprehensive solution description",
+        "features": [
+          {
+            "featureName": "Name of the Feature",
+            "featureDescription": "Description of the feature",
+            "priority": "P0/P1/P2/P3",
+            "userStories": [
+              {
+                "userStory": "As a [user role], I want [goal/desire], so that [benefit]",
+                "acceptanceCriteria": ["Criterion 1", "Criterion 2"]
               }
+            ]
           }
+        ],
+        "epics": [
+          {
+            "epicName": "Name of the Epic",
+            "description": "Description of the epic",
+            "userStories": ["list of user stories"],
+            "acceptanceCriteria": ["high level acceptance criteria for the epic"]
+          }
+        ],
+        "nonFunctionalRequirements": {
+          "performance": "Detailed performance requirements and benchmarks",
+          "scalability": "Specific scalability targets and architecture considerations",
+          "security": "Comprehensive security requirements and compliance needs",
+          "usability": "Detailed usability and accessibility requirements",
+          "reliability": "Specific reliability targets and SLAs",
+          "maintainability": "Code quality standards and maintenance requirements"
+        },
+        "roadmaps": {
+          "p0": "Detailed P0 (MVP) features and timeline",
+          "p1": "P1 features and enhancements roadmap",
+          "p2": "Future considerations and potential expansions"
+        },
+        "suggestedTechStack": {
+          "frontend": ["List modern frontend technologies for 2024/2025"],
+          "backend": ["List modern backend technologies for 2024/2025"],
+          "database": ["List appropriate database technologies"],
+          "devops": ["List modern DevOps tools and practices"],
+          "rationale": "Detailed explanation of technology choices and trade-offs"
+        },
+        "successMetrics": {
+          "businessMetrics": ["List key business KPIs"],
+          "technicalMetrics": ["List key technical performance indicators"],
+          "userMetrics": ["List key user satisfaction metrics"]
+        }
+      }
 
-          Rules:
-          1. Provide user stories and acceptance criteria based on the specified granularity.
-          2. Provide user stories for each feature.
-          3. Include 2-3 user stories per feature in the detailed mode. 1 user story per feature in high-level mode.
-          4. Provide acceptance criteria for each user story, 2-3 acceptance criteria per user story.
-          5. Provide high level overview for epics.
-          6. Ensure all descriptions are clear, concise, and free from special formatting
-          7. Do not use markdown formatting or special characters in any text fields.
-          8. Response must be ONLY the JSON object, no other text.
-        `;
+      Rules:
+      1. Generate a comprehensive proposed solution based on the problem statement and vision
+      2. For features and user stories:
+         - In High-Level mode: Provide core features with 1 user story each
+         - In Detailed mode: Provide comprehensive features with 2-3 user stories each
+      3. Provide modern, production-ready technology suggestions for 2024/2025
+      4. Include specific, measurable criteria in all NFRs
+      5. Ensure roadmap aligns with granularity level
+      6. Success metrics should be specific and measurable
+      7. Make all responses specific to the product domain
+      8. Provide thorough acceptance criteria for each user story
+      9. Ensure tech stack suggestions are cutting-edge but production-stable
+      10. Response must be only the JSON object, no additional text
+    `;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -125,7 +124,6 @@ export async function POST(req: Request) {
       const jsonStr = jsonMatch[0];
       const jsonResponse = JSON.parse(jsonStr);
 
-      // Basic validation of the response structure
       if (
         !jsonResponse.productName ||
         !jsonResponse.productVision ||
@@ -135,7 +133,9 @@ export async function POST(req: Request) {
         !jsonResponse.features ||
         !jsonResponse.epics ||
         !jsonResponse.nonFunctionalRequirements ||
-        !jsonResponse.roadmaps
+        !jsonResponse.roadmaps ||
+        !jsonResponse.suggestedTechStack ||
+        !jsonResponse.successMetrics
       ) {
         throw new Error("Invalid response structure");
       }
