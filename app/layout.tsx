@@ -5,9 +5,17 @@ import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"] });
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata = {
-  title: "Project Idea Breakdown",
-  description: "Break down your project ideas into manageable components",
+  title: "PRD Generator",
+  description:
+    "Transform your product ideas into detailed PRDs with AI assistance",
+  keywords: "PRD, Product Requirements Document, AI, Product Management",
+  author: "balasubbiah",
 };
 
 export default function RootLayout({

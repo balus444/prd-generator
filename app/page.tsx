@@ -6,15 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import IdeaBreakdown from "@/components/IdeaBreakdown";
-import PRDDisplay from "@/components/PRDDisplay";
 import QueryHistory from "@/components/QueryHistory";
 import PromptCarousel from "@/components/PromptCarousel";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { cn } from "@/lib/utils";
 import UserComfortLevel from "@/components/UserComfortLevel";
 
 interface Feature {
@@ -131,10 +126,7 @@ export default function Home() {
       setCurrentQuery(newQueryState);
       setQueryHistory((prev) => [...prev, newQueryState]);
     } catch (error) {
-      console.error("Error:", error);
-      setError(
-        error instanceof Error ? error.message : "An unexpected error occurred"
-      );
+      handleError(error);
     } finally {
       setIsLoading(false);
     }
@@ -150,6 +142,15 @@ export default function Home() {
     targetAudience: string;
     problemStatement: string;
   }) => {
+    if (
+      !prompt.text ||
+      !prompt.vision ||
+      !prompt.targetAudience ||
+      !prompt.problemStatement
+    ) {
+      setError("Invalid prompt data");
+      return;
+    }
     const newQuery = {
       productName: prompt.text,
       productVision: prompt.vision,
@@ -174,11 +175,18 @@ export default function Home() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to process the PRD");
+        throw new Error(data.error || `HTTP error! status: ${response.status}`);
       }
-
-      if (!data || typeof data !== "object" || !data.productName) {
-        throw new Error("Invalid response from server");
+      if (!data || typeof data !== "object") {
+        throw new Error("Invalid response format");
+      }
+      if (
+        !data.productName ||
+        !data.productVision ||
+        !data.targetAudience ||
+        !data.problemStatement
+      ) {
+        throw new Error("Missing required fields in response");
       }
 
       const newQueryState = {
@@ -189,13 +197,25 @@ export default function Home() {
       setCurrentQuery(newQueryState);
       setQueryHistory((prev) => [...prev, newQueryState]);
     } catch (error) {
-      console.error("Error:", error);
-      setError(
-        error instanceof Error ? error.message : "An unexpected error occurred"
-      );
+      handleError(error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleError = (error: unknown) => {
+    console.error("Error:", error);
+    if (error instanceof Error) {
+      setError(error.message);
+    } else if (typeof error === "string") {
+      setError(error);
+    } else {
+      setError("An unexpected error occurred");
+    }
+  };
+
+  const sanitizeInput = (input: string) => {
+    return input.trim().replace(/[<>]/g, ""); // Basic XSS prevention
   };
 
   return (
@@ -207,7 +227,7 @@ export default function Home() {
               PRD Generator
             </h1>
             <p className="blueprint-text mb-8">
-              Have an idea? Get a detailed PRD and start building!
+              Transform high-level product ideas into detailed PRDs
             </p>
 
             <div className="space-y-4">
@@ -227,7 +247,7 @@ export default function Home() {
                       onChange={(e) =>
                         setCurrentQuery((prev) => ({
                           ...prev,
-                          productName: e.target.value,
+                          productName: sanitizeInput(e.target.value),
                         }))
                       }
                       placeholder="Name of the product"
@@ -249,7 +269,7 @@ export default function Home() {
                       onChange={(e) =>
                         setCurrentQuery((prev) => ({
                           ...prev,
-                          productVision: e.target.value,
+                          productVision: sanitizeInput(e.target.value),
                         }))
                       }
                       placeholder="Vision for the product"
@@ -273,7 +293,7 @@ export default function Home() {
                       onChange={(e) =>
                         setCurrentQuery((prev) => ({
                           ...prev,
-                          targetAudience: e.target.value,
+                          targetAudience: sanitizeInput(e.target.value),
                         }))
                       }
                       placeholder="Who is this product for?"
@@ -295,7 +315,7 @@ export default function Home() {
                       onChange={(e) =>
                         setCurrentQuery((prev) => ({
                           ...prev,
-                          problemStatement: e.target.value,
+                          problemStatement: sanitizeInput(e.target.value),
                         }))
                       }
                       placeholder="What problem does this solve?"
