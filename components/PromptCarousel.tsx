@@ -58,7 +58,15 @@ const topRowPrompts: Prompt[] = [
     problemStatement:
       "Limited access to data analytics tools and difficulty in interpreting data",
   },
-  { id: "5", icon: <Rocket className="w-4 h-4" />, text: "Mobile game app" },
+  {
+    id: "5",
+    icon: <Rocket className="w-4 h-4" />,
+    text: "Mobile game app",
+    vision: "Create engaging mobile games that captivate players",
+    targetAudience: "Mobile game developers and enthusiasts",
+    problemStatement:
+      "Limited access to mobile game development tools and difficulty in creating engaging games",
+  },
   {
     id: "6",
     icon: <BrainCog className="w-4 h-4" />,
